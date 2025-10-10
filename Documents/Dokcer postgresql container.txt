@@ -1,0 +1,7 @@
+docker run --name budgetbrain `
+  -e POSTGRES_USER=administrator `
+  -e POSTGRES_PASSWORD=welcome@11 `
+  -e POSTGRES_DB=budgetbrain_db `
+  -p 5434:5432 `
+  -v budgetbrain_data:/var/lib/postgresql/data `
+  -d postgres:16

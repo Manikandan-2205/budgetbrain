@@ -1,0 +1,102 @@
+budgetbrain/
+├── .env                     # Shared environment variables
+├── .gitignore
+├── README.md
+├── requirements.txt          # Common dependencies for API + UI
+├── pyproject.toml            # Optional (for packaging)
+├── .venv/                    # Shared virtual environment (local only)
+│
+├── budgetbrain_api/          # Backend - FastAPI + PostgreSQL
+│   ├── app/
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── security.py
+│   │   │   └── logging_config.py
+│   │   │
+│   │   ├── db/
+│   │   │   ├── base.py
+│   │   │   ├── session.py
+│   │   │   ├── models/
+│   │   │   │   ├── user_model.py
+│   │   │   │   ├── account_model.py
+│   │   │   │   ├── transaction_model.py
+│   │   │   │   └── __init__.py
+│   │   │   ├── schemas/
+│   │   │   │   ├── user_schema.py
+│   │   │   │   ├── account_schema.py
+│   │   │   │   ├── transaction_schema.py
+│   │   │   │   └── __init__.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── api/
+│   │   │   ├── routes/
+│   │   │   │   ├── auth_routes.py
+│   │   │   │   ├── user_routes.py
+│   │   │   │   ├── account_routes.py
+│   │   │   │   ├── transaction_routes.py
+│   │   │   │   └── __init__.py
+│   │   │   ├── dependencies.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── ai_service.py
+│   │   │   ├── account_service.py
+│   │   │   ├── transaction_service.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── file_parser.py
+│   │   │   ├── data_cleaner.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── main.py
+│   │   └── __init__.py
+│   │
+│   ├── tests/
+│   │   ├── test_auth.py
+│   │   ├── test_account.py
+│   │   ├── test_transaction.py
+│   │   └── conftest.py
+│   │
+│   ├── alembic/
+│   │   ├── versions/
+│   │   ├── env.py
+│   │   ├── script.py.mako
+│   │   └── README
+│   │
+│   └── Dockerfile
+│
+├── budgetbrain_ui/           # Python-based UI (Streamlit recommended)
+│   ├── pages/
+│   │   ├── 1_Dashboard.py
+│   │   ├── 2_Accounts.py
+│   │   ├── 3_Transactions.py
+│   │   ├── 4_AI_Insights.py
+│   │   ├── 5_Settings.py
+│   │   └── __init__.py
+│   │
+│   ├── components/
+│   │   ├── sidebar.py
+│   │   ├── navbar.py
+│   │   ├── charts.py
+│   │   └── cards.py
+│   │
+│   ├── services/
+│   │   ├── api_client.py       # Talks to FastAPI backend using requests/httpx
+│   │   ├── auth_service.py
+│   │   ├── ai_visuals.py
+│   │   └── __init__.py
+│   │
+│   ├── utils/
+│   │   ├── formatters.py
+│   │   ├── constants.py
+│   │   ├── state_manager.py    # Session state handler
+│   │   └── __init__.py
+│   │
+│   ├── py                  # Streamlit entry point
+│   └── __init__.py
+│
+└── scripts/
+    ├── init_db.py              # Initialize tables, seed data
+    ├── data_ingest.py          # For bank statement uploads
+    └── train_ai_model.py       # ML model training
