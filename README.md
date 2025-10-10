@@ -63,5 +63,3 @@ The backend is powered by **FastAPI** (Python 3.11+), using **PostgreSQL** for d
 
 ### 1️⃣ Clone Repository
 ```bash
-git clone https://github.com/<your-username>/ai-finance-tracker.git
-cd ai-finance-tracker
