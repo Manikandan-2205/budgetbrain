@@ -58,8 +58,3 @@ The backend is powered by **FastAPI** (Python 3.11+), using **PostgreSQL** for d
 - GitHub Actions (CI/CD)
 
 ---
-
-## ⚙️ Project Setup (Local)
-
-### 1️⃣ Clone Repository
-```bash
