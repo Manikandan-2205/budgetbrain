@@ -1,22 +1,11 @@
 from fastapi import FastAPI
-from fastapi.security import OAuth2PasswordBearer
-from db.session import Base, engine
-from api.routes import auth_routes
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
+from api.routes import auth_routes, user_routes
 
 tags_metadata = [
-    {
-        "name": "Authentication",
-        "description": "User registration and JWT token generation (Login).",
-    },
-    {
-        "name": "Health Check",
-        "description": "Basic API health and status checks.",
-    },
+    {"name": "Authentication", "description": "JWT-based user authentication (no OAuth)."},
+    {"name": "User Management", "description": "User profile, account, and settings."},
+    {"name": "Health Check", "description": "Basic API health and status checks."},
 ]
-
 
 app = FastAPI(
     title="💰 BudgetBrain API - Core Services",
@@ -33,15 +22,10 @@ app = FastAPI(
     },
 )
 
+# ✅ Mount versioned routes
+app.include_router(auth_routes.router, prefix="/api")
+app.include_router(user_routes.router, prefix="/api")
 
-app.include_router(auth_routes.router)
-
-
-@app.get(
-    "/",
-    tags=["Health Check"],
-    summary="API Health Status",
-    description="Returns a simple JSON message indicating the API service is operational.",
-)
-def root():
-    return {"message": "Welcome to BudgetBrain API 🚀"}
+@app.get("/api/v1/health", tags=["Health Check"])
+def health_check():
+    return {"isSuccess": True, "message": "API is running", "data": None}
