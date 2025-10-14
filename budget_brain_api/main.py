@@ -10,7 +10,6 @@ from api.routes.v1 import auth_routes, user_routes
 app = FastAPI(
     title="💰 BudgetBrain API - Core Services",
     version="1.0.0",
-    openapi_tags=tags_metadata,
     contact={
         "name": "BudgetBrain Dev Team",
         "email": "support@budgetbrain.dev",

@@ -1,5 +1,5 @@
-import db.models.user_details_model
-import db.models.user_model
+import db.models.user.user_details_model
+import db.models.user.user_model
 from core.config import settings
 from db.session import Base
 from logging.config import fileConfig

@@ -2,6 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, status,Depends
 from sqlalchemy.orm import Session
 
+from core.security import hash_password
 from db.models.user.user_details_model import UserDetails
 from db.schemas.user_schema import UserCreate, UserDetailsCreate
 from db.models.user.user_model import User
@@ -69,6 +70,7 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
             detail=str(e),
         )
     
+
 @router.post("/create-user", response_model=APIResponse, status_code=status.HTTP_201_CREATED)
 def create_user_with_details(
     user_data: UserCreate,
@@ -76,12 +78,30 @@ def create_user_with_details(
     db: Session = Depends(get_db)
 ):
     try:
-        new_user = User(**user_data.dict(), created_at=datetime.now(), created_by=1)
+        # Hash the password before storing
+        hashed_pwd = hash_password(user_data.password)
+
+        new_user = User(
+            username=user_data.username,
+            password=hashed_pwd,
+            display_name=user_data.display_name,
+            role=user_data.role,
+            created_at=datetime.now(),
+            created_by=1
+        )
+        
+        print("New User:", {column.name: getattr(new_user, column.name) for column in new_user.__table__.columns})
+
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
 
-        new_details = UserDetails(**user_details_data.dict(), user_id=new_user.id, created_at=datetime.utcnow(), created_by=1)
+        new_details = UserDetails(
+            **user_details_data.dict(),
+            user_id=new_user.id,
+            created_at=datetime.now(),
+            created_by=1
+        )
         db.add(new_details)
         db.commit()
 

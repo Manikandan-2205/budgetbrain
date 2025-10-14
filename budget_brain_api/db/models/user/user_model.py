@@ -11,7 +11,7 @@ class User(Base):
 
     username = Column(String(20), unique=True, index=True, nullable=False)
     # NOTE: Storing passwords this way is highly insecure. Use a strong hashing library like 'bcrypt'.
-    password = Column(String(3), nullable=False)
+    password = Column(String(300), nullable=False)
     display_name = Column(String(20), nullable=False)
     role = Column(Integer, nullable=False, default=RoleEnum.User)
 
