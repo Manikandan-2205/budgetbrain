@@ -7,7 +7,7 @@ class Loan(Base):
     __tablename__ = "tb_bb_loans"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     name = Column(String)
     principal_amount = Column(Float)
     interest_rate = Column(Float)

@@ -8,7 +8,7 @@ class MoneyNameMaster(Base):
     __tablename__ = "tb_bb_money_name_master"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     name = Column(String, index=True)  # e.g., "Salary", "Rent", "Groceries"
     type = Column(String)  # income, expense
     category = Column(String, nullable=True)

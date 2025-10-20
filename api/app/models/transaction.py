@@ -8,9 +8,9 @@ class Transaction(Base):
     __tablename__ = "tb_bb_transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    account_id = Column(Integer, ForeignKey("accounts.id"))
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
+    account_id = Column(Integer, ForeignKey("tb_bb_accounts.id"))
+    category_id = Column(Integer, ForeignKey("tb_bb_categories.id"), nullable=True)
     amount = Column(Float)
     description = Column(String)
     date = Column(DateTime(timezone=True))

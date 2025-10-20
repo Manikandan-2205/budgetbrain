@@ -8,7 +8,7 @@ class UserDetails(Base):
     __tablename__ = "tb_bb_user_details"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"), unique=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     phone = Column(String, nullable=True)

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
 
     # Database - PostgreSQL connection
-    database_url: str = "postgresql://administrator:2002@localhost:5432/bugetbrain"
+    database_url: str = "postgresql://administrator:2002@localhost:5432/budgetbrain?options=-csearch_path=bb"
 
     # JWT
     secret_key: str = "DIsYG2ZJaHf-AidchOl9dDQXKLk1NH5KxNmyIRxWsrU"

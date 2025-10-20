@@ -8,9 +8,9 @@ class TransactionMaster(Base):
     __tablename__ = "tb_bb_transaction_master"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    account_id = Column(Integer, ForeignKey("account_master.id"))
-    money_name_id = Column(Integer, ForeignKey("money_name_master.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
+    account_id = Column(Integer, ForeignKey("tb_bb_account_master.id"))
+    money_name_id = Column(Integer, ForeignKey("tb_bb_money_name_master.id"), nullable=True)
     amount = Column(Float)
     description = Column(String, nullable=True)
     transaction_date = Column(DateTime(timezone=True))

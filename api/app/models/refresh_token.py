@@ -8,7 +8,7 @@ class RefreshToken(Base):
     __tablename__ = "tb_bb_refresh_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     token = Column(String, unique=True, index=True)
     expires_at = Column(DateTime(timezone=True))
     is_revoked = Column(Boolean, default=False)

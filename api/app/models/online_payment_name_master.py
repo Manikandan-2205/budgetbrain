@@ -8,7 +8,7 @@ class OnlinePaymentNameMaster(Base):
     __tablename__ = "tb_bb_online_payment_name_master"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     payment_name = Column(String, index=True)  # e.g., "PayPal", "Venmo", "Zelle"
     provider = Column(String, nullable=True)
     account_email = Column(String, nullable=True)

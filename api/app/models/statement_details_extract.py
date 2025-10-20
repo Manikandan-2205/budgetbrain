@@ -8,8 +8,8 @@ class StatementDetailsExtract(Base):
     __tablename__ = "tb_bb_statement_details_extract"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    account_id = Column(Integer, ForeignKey("account_master.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
+    account_id = Column(Integer, ForeignKey("tb_bb_account_master.id"), nullable=True)
     statement_date = Column(DateTime(timezone=True))
     transaction_date = Column(DateTime(timezone=True))
     description = Column(String)

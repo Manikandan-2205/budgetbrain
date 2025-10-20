@@ -8,7 +8,7 @@ class Account(Base):
     __tablename__ = "tb_bb_accounts"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     name = Column(String, index=True)
     type = Column(String)  # checking, savings, credit_card, etc.
     balance = Column(Float, default=0.0)

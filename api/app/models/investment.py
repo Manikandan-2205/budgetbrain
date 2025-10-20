@@ -7,7 +7,7 @@ class Investment(Base):
     __tablename__ = "tb_bb_investments"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     name = Column(String)
     type = Column(String)  # stock, bond, mutual_fund, crypto, etc.
     symbol = Column(String, nullable=True)

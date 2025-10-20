@@ -8,12 +8,29 @@ from sqlalchemy import pool
 from alembic import context
 
 # Add the current directory and parent directory to the path so we can import our app
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.dirname(__file__))
 
 # Import our models and session
 from app.db.base import Base
 from app.core.config import settings
+
+# Import all models to ensure they are registered with Base
+from app.models.user import User
+from app.models.user_details import UserDetails
+from app.models.account_master import AccountMaster
+from app.models.money_name_master import MoneyNameMaster
+from app.models.transaction_master import TransactionMaster
+from app.models.online_payment_name_master import OnlinePaymentNameMaster
+from app.models.statement_details_extract import StatementDetailsExtract
+from app.models.refresh_token import RefreshToken
+from app.models.account import Account
+from app.models.category import Category
+from app.models.transaction import Transaction
+from app.models.loan import Loan
+from app.models.investment import Investment
+from app.models.aggregated import AggregatedModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

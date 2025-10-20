@@ -8,7 +8,7 @@ class AccountMaster(Base):
     __tablename__ = "tb_bb_account_master"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("tb_bb_users.id"))
     account_name = Column(String, index=True)
     account_type = Column(String)  # checking, savings, credit_card, etc.
     bank_name = Column(String, nullable=True)
