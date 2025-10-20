@@ -1,9 +1,0 @@
-init alembic one time:
------------------------------------
-    alembic init alembic
-
-
-migration:
---------------------------------------
-    alembic revision --autogenerate -m "Initial database schema creation"
-    alembic upgrade head
