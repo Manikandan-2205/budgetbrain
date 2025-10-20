@@ -9,7 +9,7 @@ from app.services.user_details_service import (
     delete_user_details
 )
 from app.api.deps import get_current_user
-from app.db.models import User
+from app.models.user import User
 
 
 router = APIRouter()

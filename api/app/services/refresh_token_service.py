@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from app.db.models import RefreshToken
+from app.models.refresh_token import RefreshToken
 from app.schemas.refresh_token import RefreshTokenCreate
 from app.core.config import settings
 

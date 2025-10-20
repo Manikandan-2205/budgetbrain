@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
-from app.db.models import TransactionMaster
+from app.models.transaction_master import TransactionMaster
 from app.schemas.transaction_master import TransactionMasterCreate, TransactionMasterUpdate
 
 

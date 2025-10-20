@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.dirname(__file__))
 
 # Import our models and session
-from app.db.models import Base
+from app.db.base import Base
 from app.core.config import settings
 
 # this is the Alembic Config object, which provides

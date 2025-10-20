@@ -18,7 +18,7 @@ from app.services.statement_details_extract_service import (
     mark_extract_as_processed
 )
 from app.api.deps import get_current_user
-from app.db.models import User
+from app.models.user import User
 
 
 router = APIRouter()

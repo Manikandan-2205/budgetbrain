@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.db.models import UserDetails
+from app.models.user_details import UserDetails
 from app.schemas.user_details import UserDetailsCreate, UserDetailsUpdate
 
 

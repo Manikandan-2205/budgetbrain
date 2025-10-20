@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List
-from app.db.models import OnlinePaymentNameMaster
+from app.models.online_payment_name_master import OnlinePaymentNameMaster
 from app.schemas.online_payment_name_master import OnlinePaymentNameMasterCreate, OnlinePaymentNameMasterUpdate
 
 

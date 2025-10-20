@@ -4,7 +4,7 @@ from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.services.ml_service import get_ai_suggestions, parse_bank_statement
 from app.schemas.ml import AISuggestionRequest, AISuggestionResponse, BankStatementResponse
-from app.db.models import User
+from app.models.user import User
 
 
 router = APIRouter()

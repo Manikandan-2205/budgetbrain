@@ -15,7 +15,7 @@ from app.services.online_payment_name_master_service import (
     delete_online_payment_name_master
 )
 from app.api.deps import get_current_user
-from app.db.models import User
+from app.models.user import User
 
 
 router = APIRouter()

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List
-from app.db.models import MoneyNameMaster
+from app.models.money_name_master import MoneyNameMaster
 from app.schemas.money_name_master import MoneyNameMasterCreate, MoneyNameMasterUpdate
 
 

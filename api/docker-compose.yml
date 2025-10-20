@@ -1,5 +1,0 @@
-# Docker Compose removed - using SQLite for simplicity
-# To run the application:
-# 1. Install dependencies: pip install -r requirements.txt
-# 2. Run the API: uvicorn app.main:app --reload
-# 3. Run the UI: streamlit run ../ui/streamlit_app.py

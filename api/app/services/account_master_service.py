@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List
-from app.db.models import AccountMaster
+from app.models.account_master import AccountMaster
 from app.schemas.account_master import AccountMasterCreate, AccountMasterUpdate
 
 

@@ -2,7 +2,7 @@ import openai
 from typing import List
 from app.core.config import settings
 from app.schemas.ml import TransactionSuggestion, AISuggestionRequest, ParsedTransaction
-from app.db.models import Category
+from app.models.category import Category
 from sqlalchemy.orm import Session
 
 

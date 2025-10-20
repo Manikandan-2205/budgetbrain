@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List
-from app.db.models import StatementDetailsExtract
+from app.models.statement_details_extract import StatementDetailsExtract
 from app.schemas.statement_details_extract import StatementDetailsExtractCreate, StatementDetailsExtractUpdate
 
 

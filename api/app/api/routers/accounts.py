@@ -4,7 +4,8 @@ from typing import List
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.schemas.transactions import Account, AccountCreate
-from app.db.models import Account as AccountModel, User
+from app.models.account import Account as AccountModel
+from app.models.user import User
 
 
 router = APIRouter()

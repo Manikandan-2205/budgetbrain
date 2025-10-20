@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.db.session import get_db
 from app.schemas.transactions import Category, CategoryCreate
-from app.db.models import Category as CategoryModel
+from app.models.category import Category as CategoryModel
 
 
 router = APIRouter()

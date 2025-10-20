@@ -12,7 +12,7 @@ from app.services.refresh_token_service import (
     revoke_all_user_tokens,
     is_token_valid
 )
-from app.db.models import User as UserModel
+from app.models.user import User as UserModel
 from app.core.config import settings
 
 
@@ -77,8 +77,8 @@ def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends(get_d
             detail="Invalid or expired refresh token"
         )
 
-    refresh_db = db.query(db.models.RefreshToken).filter(
-        db.models.RefreshToken.token == refresh_data.refresh_token
+    refresh_db = db.query(RefreshToken).filter(
+        RefreshToken.token == refresh_data.refresh_token
     ).first()
 
     user = refresh_db.user

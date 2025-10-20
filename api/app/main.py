@@ -5,10 +5,10 @@ from budgetbrain.api.app.api.routers import (
     auth, accounts, transactions, categories, ml,
     user_details, account_master, money_name_master,
     transaction_master, online_payment_name_master,
-    statement_details_extract
+    statement_details_extract, aggregated
 )
 from budgetbrain.api.app.db.session import engine
-from budgetbrain.api.app.db.models import Base
+from budgetbrain.api.app.db.base import Base
 
 
 # Create database tables
@@ -44,6 +44,7 @@ app.include_router(money_name_master.router, prefix=f"{settings.api_prefix}/mast
 app.include_router(transaction_master.router, prefix=f"{settings.api_prefix}/master", tags=["transaction master"])
 app.include_router(online_payment_name_master.router, prefix=f"{settings.api_prefix}/master", tags=["online payment master"])
 app.include_router(statement_details_extract.router, prefix=f"{settings.api_prefix}/extract", tags=["statement extract"])
+app.include_router(aggregated.router, prefix=f"{settings.api_prefix}/aggregated", tags=["aggregated data"])
 
 
 @app.get("/")

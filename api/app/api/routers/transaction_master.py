@@ -14,7 +14,7 @@ from app.services.transaction_master_service import (
     delete_transaction_master
 )
 from app.api.deps import get_current_user
-from app.db.models import User
+from app.models.user import User
 
 
 router = APIRouter()
