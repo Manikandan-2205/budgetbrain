@@ -1,5 +1,3 @@
-import os
-import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -7,12 +5,19 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Add the current directory and parent directory to the path so we can import our app
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-sys.path.insert(0, os.path.dirname(__file__))
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
+config = context.config
 
-# Import our models and session
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
 from app.db.base import Base
 from app.core.config import settings
 
@@ -31,20 +36,8 @@ from app.models.transaction import Transaction
 from app.models.loan import Loan
 from app.models.investment import Investment
 from app.models.aggregated import AggregatedModel
+from app.models.activity_log import ActivityLog
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
-config = context.config
-
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
-
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -65,7 +58,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url", settings.database_url)
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,

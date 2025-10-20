@@ -1,14 +1,32 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from budgetbrain.api.app.core.config import settings
-from budgetbrain.api.app.api.routers import (
+import logging
+from app.core.config import settings
+from app.api.routers import (
     auth, accounts, transactions, categories, ml,
     user_details, account_master, money_name_master,
     transaction_master, online_payment_name_master,
     statement_details_extract, aggregated
 )
-from budgetbrain.api.app.db.session import engine
-from budgetbrain.api.app.db.base import Base
+from app.db.session import engine
+from app.db.base import Base
+from app.middleware.performance_middleware import (
+    PerformanceMonitoringMiddleware,
+    RequestCachingMiddleware,
+    RateLimitingMiddleware,
+    ExceptionHandlingMiddleware
+)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('api.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 # Create database tables
@@ -18,8 +36,20 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title=settings.app_name,
     version=settings.version,
-    openapi_url=f"{settings.api_prefix}/openapi.json"
+    openapi_url=f"{settings.api_prefix}/openapi.json",
+    docs_url=f"{settings.api_prefix}/docs",
+    redoc_url=f"{settings.api_prefix}/redoc",
+    swagger_ui_parameters={
+        "docExpansion": "none",  # Collapse all operations by default
+        "defaultModelsExpandDepth": -1,  # Collapse models by default
+    }
 )
+
+# Performance and monitoring middleware (order matters)
+app.add_middleware(ExceptionHandlingMiddleware)
+app.add_middleware(PerformanceMonitoringMiddleware)
+app.add_middleware(RequestCachingMiddleware, cache_timeout=300)  # 5 minutes
+app.add_middleware(RateLimitingMiddleware, requests_per_minute=100)  # 100 req/min
 
 # CORS middleware
 app.add_middleware(
@@ -54,4 +84,29 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    from app.core.performance import get_performance_monitor
+    from app.core.exceptions import create_success_response
+
+    # Get system stats
+    monitor = get_performance_monitor()
+    system_stats = monitor.get_system_stats()
+    metrics_summary = monitor.get_metrics_summary()
+
+    return create_success_response("System is healthy", {
+        "status": "healthy",
+        "system": system_stats,
+        "metrics": metrics_summary,
+        "timestamp": "2025-10-20T08:42:47.976Z"
+    })
+
+@app.get("/performance")
+def performance_metrics():
+    """Get detailed performance metrics"""
+    from app.core.performance import get_performance_monitor
+    from app.core.exceptions import create_success_response
+
+    monitor = get_performance_monitor()
+    return create_success_response("Performance metrics retrieved", {
+        "metrics": monitor.get_metrics_summary(),
+        "system": monitor.get_system_stats()
+    })

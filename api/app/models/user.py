@@ -11,6 +11,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    role = Column(String, default="user")  # user, admin, developer
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -18,3 +19,4 @@ class User(Base):
     accounts = relationship("Account", back_populates="user")
     transactions = relationship("Transaction", back_populates="user")
     user_details = relationship("UserDetails", back_populates="user", uselist=False)
+    activity_logs = relationship("ActivityLog", back_populates="user")

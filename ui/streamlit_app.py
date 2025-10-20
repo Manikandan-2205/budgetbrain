@@ -1,466 +1,489 @@
 import streamlit as st
 import pandas as pd
-import requests
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 import json
-from datetime import datetime
-from utils.api_client import APIClient
-from utils.charts import create_expense_chart, create_income_chart, create_budget_progress_chart
-import os
+from typing import Dict, Any, List, Optional
+import time
 
-# Page configuration
-st.set_page_config(
-    page_title="BudgetBrain - AI-Powered Budget Tracker",
-    page_icon="💰",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Import centralized API client
+from services.api_client import get_api_client, init_api_client, require_auth
 
-# Enhanced Theme configuration with multiple themes
-def apply_theme(theme_name):
-    if theme_name == "Light":
-        st.markdown("""
-        <style>
-            .main-header {
-                font-size: 2.5rem;
-                font-weight: bold;
-                color: #1f77b4;
-                text-align: center;
-                margin-bottom: 2rem;
-            }
-            .metric-card {
-                background-color: #f0f2f6;
-                padding: 1rem;
-                border-radius: 0.5rem;
-                border-left: 0.25rem solid #1f77b4;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .expense-card {
-                border-left-color: #ff6b6b !important;
-            }
-            .income-card {
-                border-left-color: #51cf66 !important;
-            }
-            .sidebar .sidebar-content {
-                background-color: #f8f9fa;
-            }
-            .stApp {
-                background-color: #ffffff;
-                color: #000000;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-    elif theme_name == "Dark":
-        st.markdown("""
-        <style>
-            .main-header {
-                font-size: 2.5rem;
-                font-weight: bold;
-                color: #61dafb;
-                text-align: center;
-                margin-bottom: 2rem;
-            }
-            .metric-card {
-                background-color: #2d3748;
-                padding: 1rem;
-                border-radius: 0.5rem;
-                border-left: 0.25rem solid #61dafb;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                color: #ffffff;
-            }
-            .expense-card {
-                border-left-color: #ff6b6b !important;
-            }
-            .income-card {
-                border-left-color: #51cf66 !important;
-            }
-            .sidebar .sidebar-content {
-                background-color: #1a202c;
-                color: #ffffff;
-            }
-            .stApp {
-                background-color: #0f1419;
-                color: #ffffff;
-            }
-            .stTextInput, .stTextArea, .stSelectbox, .stDateInput {
-                background-color: #2d3748;
-                color: #ffffff;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-    elif theme_name == "Blue":
-        st.markdown("""
-        <style>
-            .main-header {
-                font-size: 2.5rem;
-                font-weight: bold;
-                color: #1976d2;
-                text-align: center;
-                margin-bottom: 2rem;
-            }
-            .metric-card {
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                padding: 1rem;
-                border-radius: 0.5rem;
-                border-left: 0.25rem solid #1976d2;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .expense-card {
-                border-left-color: #ff6b6b !important;
-            }
-            .income-card {
-                border-left-color: #51cf66 !important;
-            }
-            .sidebar .sidebar-content {
-                background: linear-gradient(180deg, #e3f2fd 0%, #f3e5f5 100%);
-            }
-            .stApp {
-                background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-            }
-        </style>
-        """, unsafe_allow_html=True)
-    elif theme_name == "Green":
-        st.markdown("""
-        <style>
-            .main-header {
-                font-size: 2.5rem;
-                font-weight: bold;
-                color: #388e3c;
-                text-align: center;
-                margin-bottom: 2rem;
-            }
-            .metric-card {
-                background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-                padding: 1rem;
-                border-radius: 0.5rem;
-                border-left: 0.25rem solid #388e3c;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .expense-card {
-                border-left-color: #ff6b6b !important;
-            }
-            .income-card {
-                border-left-color: #51cf66 !important;
-            }
-            .sidebar .sidebar-content {
-                background: linear-gradient(180deg, #e8f5e8 0%, #fff3e0 100%);
-            }
-            .stApp {
-                background: linear-gradient(135deg, #e8f5e8 0%, #fff3e0 100%);
-            }
-        </style>
-        """, unsafe_allow_html=True)
+# Get API client instance
+api_client = get_api_client()
 
-# Initialize API client
-api_client = APIClient()
+# Custom CSS for better styling
+def load_css():
+    st.markdown("""
+    <style>
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1f77b4;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .metric-card {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #1f77b4;
+        margin: 0.5rem 0;
+    }
+    .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #c3e6cb;
+        margin: 0.5rem 0;
+    }
+    .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        border: 1px solid #f5c6cb;
+        margin: 0.5rem 0;
+    }
+    .sidebar-header {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: #1f77b4;
+    }
+    .api-status {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+    }
+    .api-status-healthy {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .api-status-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-def main():
-    # Theme selector in sidebar
-    with st.sidebar:
-        st.title("🎨 Theme Settings")
-        theme = st.selectbox(
-            "Choose Theme",
-            ["Light", "Dark", "Blue", "Green"],
-            index=0,
-            key="theme_selector"
-        )
-
-        # Apply selected theme
-        apply_theme(theme)
-
-    # Main header
-    st.markdown('<h1 class="main-header">💰 BudgetBrain</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 1.2rem; color: #666;">AI-Powered Personal Finance Management</p>', unsafe_allow_html=True)
-
-    # Authentication
-    if not st.session_state.get('authenticated', False):
-        show_login_page()
+def show_api_status():
+    """Show API connection status"""
+    health = api_client.health_check()
+    if health.get("success"):
+        st.markdown('<div class="api-status api-status-healthy">✅ API Connected</div>',
+                   unsafe_allow_html=True)
     else:
-        show_main_app()
-
-def show_login_page():
-    col1, col2, col3 = st.columns([1, 2, 1])
-
-    with col2:
-        st.subheader("🔐 Login to Your Account")
-
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-
-            if st.form_submit_button("Login", use_container_width=True):
-                if api_client.login(username, password):
-                    st.session_state.authenticated = True
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials")
-
-        st.divider()
-        st.subheader("📝 Create New Account")
-
-        with st.form("register_form"):
-            new_username = st.text_input("Username")
-            new_email = st.text_input("Email")
-            new_password = st.text_input("Password", type="password")
-
-            if st.form_submit_button("Register", use_container_width=True):
-                if api_client.register(new_username, new_email, new_password):
-                    st.success("Account created successfully! Please login.")
-                else:
-                    st.error("Registration failed")
-
-def show_main_app():
-    # Sidebar navigation
-    with st.sidebar:
-        st.subheader(f"👋 Welcome, {st.session_state.get('username', 'User')}")
-
-        page = st.radio(
-            "Navigation",
-            ["Dashboard", "Transactions", "Accounts", "AI Suggestions", "Analytics", "Settings"]
-        )
-
-        if st.button("Logout"):
-            st.session_state.authenticated = False
-            st.session_state.token = None
+        st.markdown('<div class="api-status api-status-error">❌ API Disconnected</div>',
+                   unsafe_allow_html=True)
+        if st.button("🔄 Retry Connection"):
             st.rerun()
 
-    # Main content based on selected page
-    if page == "Dashboard":
-        show_dashboard()
-    elif page == "Transactions":
-        show_transactions()
-    elif page == "Accounts":
-        show_accounts()
-    elif page == "AI Suggestions":
-        show_ai_suggestions()
-    elif page == "Analytics":
-        show_analytics()
-    elif page == "Settings":
-        show_settings()
+# Session state management
+def init_session_state():
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    if 'user' not in st.session_state:
+        st.session_state.user = None
+    if 'token' not in st.session_state:
+        st.session_state.token = None
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 'dashboard'
+    if 'login_time' not in st.session_state:
+        st.session_state.login_time = None
 
+def set_authenticated(user: Dict[str, Any], token: str):
+    st.session_state.authenticated = True
+    st.session_state.user = user
+    st.session_state.token = token
+    st.session_state.login_time = datetime.now()
+    api_client.token = token
+    api_client.user = user
+
+def logout():
+    api_client.logout()
+    st.session_state.current_page = 'login'
+    st.rerun()
+
+# Authentication functions
+def show_login_page():
+    st.title("🔐 Login to BudgetBrain")
+
+    with st.form("login_form"):
+        username = st.text_input("Username", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
+        submitted = st.form_submit_button("Login", type="primary")
+
+        if submitted:
+            if not username or not password:
+                st.error("Please fill in all fields")
+                return
+
+            with st.spinner("Logging in..."):
+                try:
+                    response = api_client.login(username, password)
+                    if response.get("success"):
+                        st.success("Login successful!")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Login failed: {response.get('message', 'Unknown error')}")
+                except Exception as e:
+                    st.error(f"Connection error: {str(e)}")
+
+    if st.button("Don't have an account? Register here"):
+        st.session_state.current_page = 'register'
+        st.rerun()
+
+def show_register_page():
+    st.title("📝 Register for BudgetBrain")
+
+    with st.form("register_form"):
+        username = st.text_input("Username", key="reg_username")
+        email = st.text_input("Email", key="reg_email")
+        password = st.text_input("Password", type="password", key="reg_password")
+        confirm_password = st.text_input("Confirm Password", type="password", key="reg_confirm_password")
+        submitted = st.form_submit_button("Register", type="primary")
+
+        if submitted:
+            if not all([username, email, password, confirm_password]):
+                st.error("Please fill in all fields")
+                return
+
+            if password != confirm_password:
+                st.error("Passwords do not match")
+                return
+
+            if len(password) < 6:
+                st.error("Password must be at least 6 characters long")
+                return
+
+            with st.spinner("Creating account..."):
+                try:
+                    response = api_client.register(username, email, password)
+                    if response.get("success"):
+                        st.success("Registration successful! Please login.")
+                        time.sleep(2)
+                        st.session_state.current_page = 'login'
+                        st.rerun()
+                    else:
+                        st.error(f"Registration failed: {response.get('message', 'Unknown error')}")
+                except Exception as e:
+                    st.error(f"Connection error: {str(e)}")
+
+    if st.button("Already have an account? Login here"):
+        st.session_state.current_page = 'login'
+        st.rerun()
+
+# Dashboard functions
 def show_dashboard():
-    st.header("📊 Dashboard")
+    st.title("📊 Dashboard")
 
-    # Quick stats
-    col1, col2, col3, col4 = st.columns(4)
+    try:
+        # Get aggregated data
+        aggregated_response = api_client.get_aggregated_data()
+        transactions_response = api_client.get_transactions(limit=1000)
 
-    with col1:
-        st.metric("Total Balance", "$12,450.00", "+2.5%")
+        if aggregated_response.get("success") and transactions_response.get("success"):
+            transactions = transactions_response.get("data", [])
 
-    with col2:
-        st.metric("Monthly Income", "$5,200.00", "+5.2%")
+            # Convert to DataFrame for analysis
+            if transactions:
+                df = pd.DataFrame(transactions)
 
-    with col3:
-        st.metric("Monthly Expenses", "$3,150.00", "-1.8%")
+                # Key Metrics
+                col1, col2, col3, col4 = st.columns(4)
 
-    with col4:
-        st.metric("Savings Rate", "39.4%", "+3.1%")
-
-    # Recent transactions
-    st.subheader("Recent Transactions")
-    transactions = api_client.get_transactions(limit=5)
-
-    if transactions:
-        df = pd.DataFrame(transactions)
-        df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
-        df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
-        st.dataframe(df[['date', 'description', 'amount', 'type']], use_container_width=True)
-    else:
-        st.info("No transactions found")
-
-    # Charts
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("Expense Breakdown")
-        # Mock data for demo
-        expense_data = pd.DataFrame({
-            'category': ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Other'],
-            'amount': [450, 320, 180, 280, 150]
-        })
-        st.bar_chart(expense_data.set_index('category'))
-
-    with col2:
-        st.subheader("Income vs Expenses")
-        # Mock data for demo
-        monthly_data = pd.DataFrame({
-            'month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            'income': [5200, 5100, 5300, 5200, 5400, 5200],
-            'expenses': [3150, 3200, 3100, 3300, 3250, 3150]
-        })
-        st.line_chart(monthly_data.set_index('month'))
-
-def show_transactions():
-    st.header("💳 Transactions")
-
-    col1, col2 = st.columns([3, 1])
-
-    with col1:
-        st.subheader("All Transactions")
-
-        # Filters
-        col_a, col_b, col_c = st.columns(3)
-        with col_a:
-            date_from = st.date_input("From Date")
-        with col_b:
-            date_to = st.date_input("To Date")
-        with col_c:
-            category_filter = st.selectbox("Category", ["All", "Food", "Transportation", "Entertainment"])
-
-        transactions = api_client.get_transactions()
-
-        if transactions:
-            df = pd.DataFrame(transactions)
-            df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
-            df['amount'] = df['amount'].apply(lambda x: f"${x:,.2f}")
-
-            # Apply filters
-            if category_filter != "All":
-                df = df[df['category_name'] == category_filter]
-
-            st.dataframe(df[['date', 'description', 'amount', 'type', 'category_name']], use_container_width=True)
-        else:
-            st.info("No transactions found")
-
-    with col2:
-        st.subheader("Add Transaction")
-
-        with st.form("add_transaction"):
-            amount = st.number_input("Amount", min_value=0.01, step=0.01)
-            description = st.text_input("Description")
-            transaction_type = st.selectbox("Type", ["income", "expense"])
-            date = st.date_input("Date")
-            category_id = st.selectbox("Category", ["1", "2", "3"])  # Mock categories
-
-            if st.form_submit_button("Add Transaction"):
-                if api_client.add_transaction(amount, description, transaction_type, date, category_id):
-                    st.success("Transaction added successfully!")
-                    st.rerun()
-                else:
-                    st.error("Failed to add transaction")
-
-def show_accounts():
-    st.header("🏦 Accounts")
-
-    accounts = api_client.get_accounts()
-
-    if accounts:
-        for account in accounts:
-            with st.expander(f"{account['name']} - {account['type']}"):
-                col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Balance", f"${account['balance']:,.2f}")
+                    total_income = df[df['amount'] > 0]['amount'].sum()
+                    st.metric("Total Income", f"${total_income:,.2f}")
+
                 with col2:
-                    st.metric("Currency", account['currency'])
+                    total_expenses = abs(df[df['amount'] < 0]['amount'].sum())
+                    st.metric("Total Expenses", f"${total_expenses:,.2f}")
+
                 with col3:
-                    st.metric("Type", account['type'].title())
+                    net_balance = total_income - total_expenses
+                    st.metric("Net Balance", f"${net_balance:,.2f}")
+
+                with col4:
+                    transaction_count = len(df)
+                    st.metric("Total Transactions", transaction_count)
+
+                # Charts
+                st.subheader("📈 Financial Overview")
+
+                # Income vs Expenses over time
+                if 'created_at' in df.columns:
+                    df['created_at'] = pd.to_datetime(df['created_at'])
+                    df['date'] = df['created_at'].dt.date
+
+                    daily_summary = df.groupby('date').agg({
+                        'amount': lambda x: x[x > 0].sum() - abs(x[x < 0].sum())
+                    }).reset_index()
+
+                    fig = px.line(daily_summary, x='date', y='amount',
+                                title='Daily Net Flow',
+                                labels={'amount': 'Amount ($)', 'date': 'Date'})
+                    st.plotly_chart(fig, use_container_width=True)
+
+                # Expense Categories
+                expense_df = df[df['amount'] < 0].copy()
+                if not expense_df.empty:
+                    expense_df['amount'] = expense_df['amount'].abs()
+                    category_expenses = expense_df.groupby('category_id')['amount'].sum().reset_index()
+
+                    fig2 = px.pie(category_expenses, values='amount', names='category_id',
+                                title='Expense Categories')
+                    st.plotly_chart(fig2, use_container_width=True)
+
+                # Recent Transactions
+                st.subheader("🕒 Recent Transactions")
+                recent_df = df.sort_values('created_at', ascending=False).head(10)
+                st.dataframe(recent_df[['created_at', 'amount', 'description']].style.format({
+                    'amount': '${:.2f}',
+                    'created_at': lambda x: x.strftime('%Y-%m-%d %H:%M') if hasattr(x, 'strftime') else str(x)
+                }))
+
+            else:
+                st.info("No transactions found. Start by adding some transactions!")
+        else:
+            st.error("Failed to load dashboard data")
+
+    except Exception as e:
+        st.error(f"Error loading dashboard: {str(e)}")
+
+# Transaction management
+def show_transactions_page():
+    st.title("💳 Transactions")
+
+    tab1, tab2 = st.tabs(["📋 View Transactions", "➕ Add Transaction"])
+
+    with tab1:
+        try:
+            response = api_client.get_transactions(limit=100)
+            if response.get("success"):
+                transactions = response.get("data", [])
+                if transactions:
+                    df = pd.DataFrame(transactions)
+                    st.dataframe(df[['id', 'amount', 'description', 'created_at']].style.format({
+                        'amount': '${:.2f}',
+                        'created_at': lambda x: x.strftime('%Y-%m-%d %H:%M') if hasattr(x, 'strftime') else str(x)
+                    }))
+
+                    # Transaction statistics
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric("Total Transactions", len(df))
+                    with col2:
+                        avg_amount = df['amount'].mean()
+                        st.metric("Average Amount", f"${avg_amount:.2f}")
+                else:
+                    st.info("No transactions found.")
+            else:
+                st.error("Failed to load transactions")
+        except Exception as e:
+            st.error(f"Error loading transactions: {str(e)}")
+
+    with tab2:
+        with st.form("add_transaction"):
+            st.subheader("Add New Transaction")
+
+            amount = st.number_input("Amount", step=0.01, format="%.2f")
+            description = st.text_input("Description")
+            transaction_type = st.selectbox("Type", ["income", "expense", "transfer"])
+
+            # Get accounts for selection
+            try:
+                accounts_response = api_client.get_accounts()
+                if accounts_response.get("success"):
+                    accounts = accounts_response.get("data", [])
+                    if accounts:
+                        account_options = {acc['id']: acc['name'] for acc in accounts}
+                        selected_account = st.selectbox("Account",
+                                                      options=list(account_options.keys()),
+                                                      format_func=lambda x: account_options[x])
+                    else:
+                        st.warning("No accounts found. Please create an account first.")
+                        selected_account = None
+                else:
+                    st.error("Failed to load accounts")
+                    selected_account = None
+            except:
+                selected_account = None
+
+            submitted = st.form_submit_button("Add Transaction")
+
+            if submitted:
+                if not description or amount == 0:
+                    st.error("Please fill in all required fields")
+                    return
+
+                # Adjust amount based on type
+                if transaction_type == "expense":
+                    amount = -abs(amount)
+
+                transaction_data = {
+                    "amount": amount,
+                    "description": description,
+                    "account_id": selected_account
+                }
+
+                try:
+                    response = api_client.create_transaction(transaction_data)
+                    if response.get("success"):
+                        st.success("Transaction added successfully!")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Failed to add transaction: {response.get('message')}")
+                except Exception as e:
+                    st.error(f"Error adding transaction: {str(e)}")
+
+# Account management
+def show_accounts_page():
+    st.title("🏦 Accounts")
+
+    tab1, tab2 = st.tabs(["📋 View Accounts", "➕ Add Account"])
+
+    with tab1:
+        try:
+            response = api_client.get_accounts()
+            if response.get("success"):
+                accounts = response.get("data", [])
+                if accounts:
+                    df = pd.DataFrame(accounts)
+                    st.dataframe(df[['id', 'name', 'balance', 'currency']].style.format({
+                        'balance': '${:.2f}'
+                    }))
+
+                    # Account statistics
+                    total_balance = df['balance'].sum()
+                    st.metric("Total Balance Across All Accounts", f"${total_balance:,.2f}")
+                else:
+                    st.info("No accounts found.")
+            else:
+                st.error("Failed to load accounts")
+        except Exception as e:
+            st.error(f"Error loading accounts: {str(e)}")
+
+    with tab2:
+        with st.form("add_account"):
+            st.subheader("Add New Account")
+
+            name = st.text_input("Account Name")
+            account_type = st.selectbox("Account Type",
+                                      ["checking", "savings", "credit_card", "investment"])
+            balance = st.number_input("Initial Balance", step=0.01, format="%.2f")
+            currency = st.selectbox("Currency", ["USD", "EUR", "GBP", "INR"])
+
+            submitted = st.form_submit_button("Add Account")
+
+            if submitted:
+                if not name:
+                    st.error("Please enter an account name")
+                    return
+
+                account_data = {
+                    "name": name,
+                    "account_type": account_type,
+                    "balance": balance,
+                    "currency": currency
+                }
+
+                try:
+                    response = api_client.create_account(account_data)
+                    if response.get("success"):
+                        st.success("Account added successfully!")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Failed to add account: {response.get('message')}")
+                except Exception as e:
+                    st.error(f"Error adding account: {str(e)}")
+
+# Main app
+def main():
+    st.set_page_config(
+        page_title="BudgetBrain - Personal Finance Manager",
+        page_icon="💰",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+
+    load_css()
+    init_session_state()
+    init_api_client()  # Initialize API client from cache
+
+    # Sidebar navigation
+    if st.session_state.authenticated:
+        with st.sidebar:
+            st.markdown('<div class="sidebar-header">💰 BudgetBrain</div>', unsafe_allow_html=True)
+
+            # API Status
+            show_api_status()
+
+            if st.session_state.user:
+                st.write(f"👤 {st.session_state.user['username']}")
+                st.write(f"📧 {st.session_state.user['email']}")
+
+            st.markdown("---")
+
+            pages = {
+                "Dashboard": "dashboard",
+                "Transactions": "transactions",
+                "Accounts": "accounts",
+                "Statement Upload": "statement_upload",
+                "Analytics": "analytics",
+                "AI Suggestions": "ai_suggestions"
+            }
+
+            for page_name, page_key in pages.items():
+                if st.button(page_name, key=f"nav_{page_key}",
+                           help=f"Go to {page_name}",
+                           use_container_width=True):
+                    st.session_state.current_page = page_key
+                    st.rerun()
+
+            st.markdown("---")
+            if st.button("🚪 Logout", type="secondary", use_container_width=True):
+                logout()
+
+    # Main content
+    if not st.session_state.authenticated:
+        if st.session_state.current_page == 'register':
+            show_register_page()
+        else:
+            show_login_page()
     else:
-        st.info("No accounts found")
-
-    # Add new account
-    st.subheader("Add New Account")
-    with st.form("add_account"):
-        name = st.text_input("Account Name")
-        account_type = st.selectbox("Type", ["checking", "savings", "credit_card"])
-        balance = st.number_input("Initial Balance", step=0.01)
-
-        if st.form_submit_button("Create Account"):
-            if api_client.add_account(name, account_type, balance):
-                st.success("Account created successfully!")
-                st.rerun()
-            else:
-                st.error("Failed to create account")
-
-def show_ai_suggestions():
-    st.header("🤖 AI Suggestions")
-
-    # Transaction categorization suggestions
-    st.subheader("Smart Categorization")
-
-    with st.form("ai_suggestion"):
-        description = st.text_input("Transaction Description")
-        amount = st.number_input("Amount", step=0.01)
-        trans_type = st.selectbox("Type", ["income", "expense"])
-
-        if st.form_submit_button("Get Suggestions"):
-            suggestions = api_client.get_ai_suggestions(description, amount, trans_type)
-            if suggestions:
-                st.subheader("Suggested Categories:")
-                for suggestion in suggestions['suggestions']:
-                    st.write(f"• {suggestion['category_name']} (Confidence: {suggestion['confidence']:.2f})")
-            else:
-                st.error("Failed to get suggestions")
-
-    # Bank statement upload
-    st.subheader("Upload Bank Statement")
-    uploaded_file = st.file_uploader("Choose a file", type=['pdf', 'csv', 'xlsx'])
-
-    if uploaded_file is not None:
-        if st.button("Process Statement"):
-            result = api_client.upload_bank_statement(uploaded_file)
-            if result:
-                st.success(f"Processed {result['total_parsed']} transactions")
-                st.dataframe(pd.DataFrame(result['transactions']))
-            else:
-                st.error("Failed to process statement")
-
-def show_analytics():
-    st.header("📈 Analytics")
-
-    # Time period selector
-    period = st.selectbox("Time Period", ["Last 30 days", "Last 3 months", "Last 6 months", "Last year"])
-
-    # Mock analytics data
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("Spending by Category")
-        spending_data = pd.DataFrame({
-            'category': ['Food', 'Transportation', 'Entertainment', 'Utilities', 'Healthcare'],
-            'amount': [850, 420, 280, 380, 220]
-        })
-        st.bar_chart(spending_data.set_index('category'))
-
-    with col2:
-        st.subheader("Monthly Trend")
-        trend_data = pd.DataFrame({
-            'month': ['Jul', 'Aug', 'Sep', 'Oct'],
-            'income': [5200, 5300, 5100, 5400],
-            'expenses': [3150, 3200, 3100, 3300]
-        })
-        st.line_chart(trend_data.set_index('month'))
-
-    # Budget progress
-    st.subheader("Budget Progress")
-    budgets = [
-        {"category": "Food", "budget": 800, "spent": 650, "percentage": 81.25},
-        {"category": "Transportation", "budget": 400, "spent": 320, "percentage": 80.0},
-        {"category": "Entertainment", "budget": 300, "spent": 180, "percentage": 60.0},
-    ]
-
-    for budget in budgets:
-        progress = budget['percentage'] / 100
-        st.progress(progress)
-        st.write(f"{budget['category']}: ${budget['spent']:.2f} / ${budget['budget']:.2f} ({budget['percentage']:.1f}%)")
-
-def show_settings():
-    st.header("⚙️ Settings")
-
-    st.subheader("Profile Settings")
-    with st.form("profile_settings"):
-        current_username = st.text_input("Username", value=st.session_state.get('username', ''))
-        email = st.text_input("Email")
-
-        if st.form_submit_button("Update Profile"):
-            st.success("Profile updated successfully!")
-
-    st.subheader("Notification Preferences")
-    email_notifications = st.checkbox("Email notifications", value=True)
-    budget_alerts = st.checkbox("Budget alerts", value=True)
-    weekly_reports = st.checkbox("Weekly reports", value=False)
-
-    st.subheader("Data Export")
-    if st.button("Export All Data"):
-        st.info("Data export feature coming soon!")
+        if st.session_state.current_page == 'dashboard':
+            show_dashboard()
+        elif st.session_state.current_page == 'transactions':
+            show_transactions_page()
+        elif st.session_state.current_page == 'accounts':
+            show_accounts_page()
+        elif st.session_state.current_page == 'categories':
+            st.title("📂 Categories")
+            st.info("Categories management coming soon!")
+        elif st.session_state.current_page == 'analytics':
+            st.title("📊 Advanced Analytics")
+            st.info("Advanced analytics coming soon!")
+        elif st.session_state.current_page == 'ai_suggestions':
+            from pages.ai_suggestions import show_ai_suggestions_page
+            show_ai_suggestions_page()
+        elif st.session_state.current_page == 'analytics':
+            from pages.analytics import show_analytics_page
+            show_analytics_page()
+        elif st.session_state.current_page == 'statement_upload':
+            from pages.statement_upload import show_statement_upload_page
+            show_statement_upload_page()
+        else:
+            show_dashboard()
 
 if __name__ == "__main__":
     main()

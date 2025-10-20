@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # JWT
     secret_key: str = "DIsYG2ZJaHf-AidchOl9dDQXKLk1NH5KxNmyIRxWsrU"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 60  # 1 hour
 
     # AI/ML
     openai_api_key: str = ""
