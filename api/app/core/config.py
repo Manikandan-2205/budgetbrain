@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
 
     # Database - PostgreSQL connection
-    database_url: str = "postgresql://administrator:2002@localhost:5432/bugetbrain?search_path=bb"
+    database_url: str = "postgresql://administrator:2002@localhost:5432/bugetbrain"
 
     # JWT
     secret_key: str = "DIsYG2ZJaHf-AidchOl9dDQXKLk1NH5KxNmyIRxWsrU"

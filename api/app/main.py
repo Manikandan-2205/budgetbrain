@@ -1,9 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
-from app.api.routers import auth, accounts, transactions, categories, ml
-from app.db.session import engine
-from app.db.models import Base
+from budgetbrain.api.app.core.config import settings
+from budgetbrain.api.app.api.routers import (
+    auth, accounts, transactions, categories, ml,
+    user_details, account_master, money_name_master,
+    transaction_master, online_payment_name_master,
+    statement_details_extract
+)
+from budgetbrain.api.app.db.session import engine
+from budgetbrain.api.app.db.models import Base
 
 
 # Create database tables
@@ -31,6 +36,14 @@ app.include_router(accounts.router, prefix=f"{settings.api_prefix}/accounts", ta
 app.include_router(transactions.router, prefix=f"{settings.api_prefix}/transactions", tags=["transactions"])
 app.include_router(categories.router, prefix=f"{settings.api_prefix}/categories", tags=["categories"])
 app.include_router(ml.router, prefix=f"{settings.api_prefix}/ml", tags=["machine learning"])
+
+# New master data routers
+app.include_router(user_details.router, prefix=f"{settings.api_prefix}/user", tags=["user details"])
+app.include_router(account_master.router, prefix=f"{settings.api_prefix}/master", tags=["account master"])
+app.include_router(money_name_master.router, prefix=f"{settings.api_prefix}/master", tags=["money name master"])
+app.include_router(transaction_master.router, prefix=f"{settings.api_prefix}/master", tags=["transaction master"])
+app.include_router(online_payment_name_master.router, prefix=f"{settings.api_prefix}/master", tags=["online payment master"])
+app.include_router(statement_details_extract.router, prefix=f"{settings.api_prefix}/extract", tags=["statement extract"])
 
 
 @app.get("/")
