@@ -6,7 +6,7 @@ import time
 import logging
 from typing import Callable
 from fastapi import Request, Response
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.performance import get_performance_monitor
 
 logger = logging.getLogger(__name__)

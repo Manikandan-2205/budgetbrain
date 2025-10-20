@@ -34,7 +34,7 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 
-@router.post("/register", response_model=User)
+@router.post(" ", response_model=User)
 def register(user: UserCreate, db: Session = Depends(get_db)):
         _logger.info(f"Registration attempt for username: {user.username}, email: {user.email}")
 

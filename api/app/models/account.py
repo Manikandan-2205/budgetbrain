@@ -18,9 +18,3 @@ class Account(Base):
 
     user = relationship("User", back_populates="accounts")
     transactions = relationship("Transaction", back_populates="account")
-    account_master = relationship("AccountMaster", back_populates="user")
-    money_name_master = relationship("MoneyNameMaster", back_populates="user")
-    transaction_master = relationship("TransactionMaster", back_populates="user")
-    online_payment_name_master = relationship("OnlinePaymentNameMaster", back_populates="user")
-    statement_details_extract = relationship("StatementDetailsExtract", back_populates="user")
-    refresh_tokens = relationship("RefreshToken", back_populates="user")

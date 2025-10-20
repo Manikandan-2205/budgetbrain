@@ -7,7 +7,12 @@ import logging
 from typing import Dict, Any, Optional, Callable, TypeVar
 from functools import wraps
 from contextlib import contextmanager
-import psutil
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    psutil = None
 import threading
 from collections import defaultdict, deque
 import gc
@@ -75,18 +80,31 @@ class PerformanceMonitor:
 
     def get_system_stats(self) -> Dict[str, Any]:
         """Get system resource statistics"""
-        try:
-            return {
-                'cpu_percent': psutil.cpu_percent(interval=0.1),
-                'memory_percent': psutil.virtual_memory().percent,
-                'memory_used_mb': psutil.virtual_memory().used / 1024 / 1024,
-                'memory_available_mb': psutil.virtual_memory().available / 1024 / 1024,
-                'disk_usage_percent': psutil.disk_usage('/').percent,
-                'active_threads': threading.active_count()
-            }
-        except Exception as e:
-            logger.error(f"Error getting system stats: {e}")
-            return {}
+        stats = {'active_threads': threading.active_count()}
+
+        if PSUTIL_AVAILABLE and psutil:
+            try:
+                stats.update({
+                    'cpu_percent': psutil.cpu_percent(interval=0.1),
+                    'memory_percent': psutil.virtual_memory().percent,
+                    'memory_used_mb': psutil.virtual_memory().used / 1024 / 1024,
+                    'memory_available_mb': psutil.virtual_memory().available / 1024 / 1024,
+                    'disk_usage_percent': psutil.disk_usage('/').percent,
+                })
+            except Exception as e:
+                logger.error(f"Error getting system stats: {e}")
+        else:
+            # Fallback stats when psutil is not available
+            stats.update({
+                'cpu_percent': 0.0,
+                'memory_percent': 0.0,
+                'memory_used_mb': 0.0,
+                'memory_available_mb': 0.0,
+                'disk_usage_percent': 0.0,
+                'psutil_available': False
+            })
+
+        return stats
 
 
 # Global performance monitor
